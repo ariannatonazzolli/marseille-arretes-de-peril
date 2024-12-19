@@ -20,7 +20,12 @@ for quarter in quarters:
     streets = all_streets_quarter.find_all('p')
     print('\n', quarter.get_text())
     for street in streets:
+        all_houses_street = street.find_next_sibling('ul')
         street_name = street.get_text().strip()
         if street_name and not street_name.startswith('-'):
+            print('')
             print(clean_text(street_name))
+            houses_street = all_houses_street.find_all('li')
+            for house in houses_street:
+                print(house.get_text())
 
