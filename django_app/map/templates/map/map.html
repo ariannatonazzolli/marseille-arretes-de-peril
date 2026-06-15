@@ -27,6 +27,20 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
+        #description {
+            max-width: 800px;
+            text-align: center;
+            color: #444;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        #stats {
+            margin-bottom: 18px;
+            font-size: 14px;
+            color: #555;
+        }
+
         #search-box {
             display: flex;
             gap: 8px;
@@ -57,17 +71,55 @@
             margin-bottom: 8px;
             min-height: 18px;
         }
+
+        #filter-box {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            font-size: 14px;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .filter-btn.active {
+            opacity: 1;
+            border-color: #333;
+        }
+
+        #btn-all  { background: #eee; color: #333; }
+        #btn-red  { background: #e74c3c; color: white; }
+        #btn-green { background: #27ae60; color: white; }
     </style>
 </head>
 <body>
 
 <h1>Arrêtés de mise en sécurité à Marseille</h1>
 
+<p id="description">
+    À Marseille, de nombreux immeubles font l'objet d'un <strong>arrêté de mise en sécurité</strong> en raison de leur état de dégradation.
+    Cette carte recense ces bâtiments : les <strong style="color:#e74c3c">épingles rouges</strong> signalent les immeubles toujours sous arrêté,
+    tandis que les <strong style="color:#27ae60">épingles vertes</strong> indiquent ceux pour lesquels une mainlevée a été prononcée.
+</p>
+
+<div id="stats"></div>
+
 <div id="search-box">
     <input id="search-input" type="text" placeholder="Rechercher une adresse (par exemple 69 rue d'Aubagne)..." />
     <button id="search-button">Rechercher</button>
 </div>
 <div id="search-message"></div>
+
+<div id="filter-box">
+    <button class="filter-btn active" id="btn-all">Tous</button>
+    <button class="filter-btn active" id="btn-red">Arrêtés</button>
+    <button class="filter-btn active" id="btn-green">Mainlevées</button>
+</div>
 
 <div id="map"></div>
 
@@ -123,6 +175,11 @@
         return { place, marker };
     });
 
+    const totalRed   = markers.filter(m => m.place.mainlevee === false).length;
+    const totalGreen = markers.filter(m => m.place.mainlevee === true).length;
+    document.getElementById('stats').innerHTML =
+        '<b>' + totalRed + '</b> arrêtés de mise en sécurité &nbsp;|&nbsp; <b>' + totalGreen + '</b> mainlevées';
+
     function search() {
         const query = document.getElementById('search-input').value.trim().toLowerCase();
         const msg = document.getElementById('search-message');
@@ -152,6 +209,43 @@
     document.getElementById('search-button').addEventListener('click', search);
     document.getElementById('search-input').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') search();
+    });
+
+    let showRed = true;
+    let showGreen = true;
+
+    function applyFilter() {
+        markers.forEach(function(m) {
+            const visible = m.place.mainlevee ? showGreen : showRed;
+            if (visible) {
+                m.marker.addTo(map);
+            } else {
+                m.marker.remove();
+            }
+        });
+    }
+
+    document.getElementById('btn-all').addEventListener('click', function() {
+        showRed = true;
+        showGreen = true;
+        document.getElementById('btn-red').classList.add('active');
+        document.getElementById('btn-green').classList.add('active');
+        this.classList.add('active');
+        applyFilter();
+    });
+
+    document.getElementById('btn-red').addEventListener('click', function() {
+        showRed = !showRed;
+        this.classList.toggle('active', showRed);
+        document.getElementById('btn-all').classList.remove('active');
+        applyFilter();
+    });
+
+    document.getElementById('btn-green').addEventListener('click', function() {
+        showGreen = !showGreen;
+        this.classList.toggle('active', showGreen);
+        document.getElementById('btn-all').classList.remove('active');
+        applyFilter();
     });
 
     const legend = L.control({ position: 'bottomright' });
