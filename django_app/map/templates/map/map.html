@@ -95,6 +95,29 @@
         #btn-all  { background: #eee; color: #333; }
         #btn-red  { background: #e74c3c; color: white; }
         #btn-green { background: #27ae60; color: white; }
+
+        #footer {
+            margin-top: 18px;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+
+        #footer a {
+            color: #666;
+        }
+
+        #chart-container {
+            width: 800px;
+            margin-top: 30px;
+        }
+
+        #chart-container h2 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -123,8 +146,18 @@
 
 <div id="map"></div>
 
+<div id="chart-container">
+    <h2>Arrêtés et mainlevées par arrondissement</h2>
+    <canvas id="arrondissement-chart"></canvas>
+</div>
+
+{{ places_data|json_script:"places-data" }}
+{{ chart_data|json_script:"chart-data" }}
+
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
     // Start the map centered on Marseille
@@ -135,18 +168,7 @@
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // list of places with lat/lon
-    const places = [
-        {% for place in places %}
-        {
-            name: "{{ place.name|escapejs }}",
-            address: "{{ place.address|escapejs }}",
-            lat: {{ place.lat }},
-            lon: {{ place.lon }},
-            mainlevee: {{ place.mainlevee|yesno:"true,false" }}
-        }{% if not forloop.last %},{% endif %}
-        {% endfor %}
-    ];
+    const places = JSON.parse(document.getElementById('places-data').textContent);
 
     const redIcon = L.icon({
         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
@@ -175,10 +197,14 @@
         return { place, marker };
     });
 
-    const totalRed   = markers.filter(m => m.place.mainlevee === false).length;
-    const totalGreen = markers.filter(m => m.place.mainlevee === true).length;
+    const totalRed      = markers.filter(m => m.place.mainlevee === false).length;
+    const totalGreen    = markers.filter(m => m.place.mainlevee === true).length;
+    const totalBatiments = 93945;
+    const pctRed        = (totalRed   / totalBatiments * 100).toFixed(2);
+    const pctGreen      = (totalGreen / totalBatiments * 100).toFixed(2);
     document.getElementById('stats').innerHTML =
-        '<b>' + totalRed + '</b> arrêtés de mise en sécurité &nbsp;|&nbsp; <b>' + totalGreen + '</b> mainlevées';
+        '<b>' + totalRed + '</b> arrêtés de mise en sécurité (' + pctRed + '% des immeubles marseillais) &nbsp;|&nbsp; <b>' + totalGreen + '</b> mainlevées (' + pctGreen + '%)' +
+        '<br><small style="color:#aaa">Pourcentages calculés sur 93945 immeubles à Marseille — source : <a href="https://bdnb.io" target="_blank" style="color:#aaa">Base de Données Nationale des Bâtiments (BDNB)</a>, février 2026</small>';
 
     function search() {
         const query = document.getElementById('search-input').value.trim().toLowerCase();
@@ -260,7 +286,54 @@
         return div;
     };
     legend.addTo(map);
+
+    // --- Stacked bar chart by arrondissement (data from server) ---
+    const chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    const labels    = chartData.map(e => e.arr);
+    const redData   = chartData.map(e => e.red);
+    const greenData = chartData.map(e => e.green);
+
+    new Chart(document.getElementById('arrondissement-chart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Arrêtés de mise en sécurité',
+                    data: redData,
+                    backgroundColor: '#e74c3c'
+                },
+                {
+                    label: 'Mainlevées',
+                    data: greenData,
+                    backgroundColor: '#27ae60'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    title: { display: true, text: 'Arrondissement', font: { size: 13 } }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }
+    });
 </script>
+
+
+<p id="footer">
+    Source des données : <a href="https://www.marseille.fr/logement-urbanisme/amelioration-de-lhabitat/arretes-de-peril" target="_blank">Ville de Marseille — Arrêtés de péril</a> &nbsp;|&nbsp; Réalisé par Arianna Tonazzolli
+</p>
 
 </body>
 </html>
