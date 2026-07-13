@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,6 +117,18 @@
             color: #666;
         }
 
+        #lang-toggle {
+            align-self: flex-end;
+            margin-bottom: 6px;
+            padding: 6px 14px;
+            font-size: 13px;
+            background: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
         #chart-container {
             width: 800px;
             max-width: 100%;
@@ -146,9 +158,11 @@
 </head>
 <body>
 
-<h1>Arrêtés de mise en sécurité à Marseille</h1>
+<button id="lang-toggle" type="button">English</button>
 
-<p id="description">
+<h1 data-i18n="title">Arrêtés de mise en sécurité à Marseille</h1>
+
+<p id="description" data-i18n-html="description">
     À Marseille, de nombreux immeubles font l'objet d'un <strong>arrêté de mise en sécurité</strong> en raison de leur état de dégradation.
     Cette carte recense ces bâtiments : les <strong style="color:#e74c3c">épingles rouges</strong> signalent les immeubles toujours sous arrêté,
     tandis que les <strong style="color:#27ae60">épingles vertes</strong> indiquent ceux pour lesquels une mainlevée a été prononcée.
@@ -157,21 +171,21 @@
 <div id="stats"></div>
 
 <div id="search-box">
-    <input id="search-input" type="text" placeholder="Rechercher une adresse (par exemple 69 rue d'Aubagne)..." />
-    <button id="search-button">Rechercher</button>
+    <input id="search-input" type="text" data-i18n-placeholder="searchPlaceholder" placeholder="Rechercher une adresse (par exemple 69 rue d'Aubagne)..." />
+    <button id="search-button" data-i18n="searchButton">Rechercher</button>
 </div>
 <div id="search-message"></div>
 
 <div id="filter-box">
-    <button class="filter-btn active" id="btn-all">Tous</button>
-    <button class="filter-btn active" id="btn-red">Arrêtés</button>
-    <button class="filter-btn active" id="btn-green">Mainlevées</button>
+    <button class="filter-btn active" id="btn-all" data-i18n="filterAll">Tous</button>
+    <button class="filter-btn active" id="btn-red" data-i18n="filterRed">Arrêtés</button>
+    <button class="filter-btn active" id="btn-green" data-i18n="filterGreen">Mainlevées</button>
 </div>
 
 <div id="map"></div>
 
 <div id="chart-container">
-    <h2>Arrêtés et mainlevées par arrondissement</h2>
+    <h2 data-i18n="chartTitle">Arrêtés et mainlevées par arrondissement</h2>
     <canvas id="arrondissement-chart"></canvas>
 </div>
 
@@ -184,6 +198,77 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script>
+    // --- Translations (FR default, EN alternative) ---
+    const TRANSLATIONS = {
+        fr: {
+            title: "Arrêtés de mise en sécurité à Marseille",
+            description: `À Marseille, de nombreux immeubles font l'objet d'un <strong>arrêté de mise en sécurité</strong> en raison de leur état de dégradation.
+                Cette carte recense ces bâtiments : les <strong style="color:#e74c3c">épingles rouges</strong> signalent les immeubles toujours sous arrêté,
+                tandis que les <strong style="color:#27ae60">épingles vertes</strong> indiquent ceux pour lesquels une mainlevée a été prononcée.`,
+            searchPlaceholder: "Rechercher une adresse (par exemple 69 rue d'Aubagne)...",
+            searchButton: "Rechercher",
+            filterAll: "Tous",
+            filterRed: "Arrêtés",
+            filterGreen: "Mainlevées",
+            chartTitle: "Arrêtés et mainlevées par arrondissement",
+            footer: `Source des données : <a href="https://www.marseille.fr/logement-urbanisme/amelioration-de-lhabitat/arretes-de-peril" target="_blank">Ville de Marseille — Arrêtés de péril</a> &nbsp;|&nbsp; Réalisé par Arianna Tonazzolli`,
+            noResults: "Aucune adresse trouvée.",
+            resultsFound: n => `${n} résultat${n > 1 ? 's' : ''} trouvé${n > 1 ? 's' : ''}.`,
+            stats: (totalRed, pctRed, totalGreen, pctGreen) =>
+                `<b>${totalRed}</b> arrêtés de mise en sécurité (${pctRed}% des immeubles marseillais) &nbsp;|&nbsp; <b>${totalGreen}</b> mainlevées (${pctGreen}%)` +
+                `<br><small style="color:#aaa">Pourcentages calculés sur 93945 immeubles à Marseille — source : <a href="https://bdnb.io" target="_blank" style="color:#aaa">Base de Données Nationale des Bâtiments (BDNB)</a>, février 2026</small>`,
+            legendTitle: "Légende",
+            legendRed: "Arrêté de mise en sécurité",
+            legendGreen: "Mainlevée",
+            chartDatasetRed: "Arrêtés de mise en sécurité",
+            chartDatasetGreen: "Mainlevées",
+            chartAxisArr: "Arrondissement",
+            toggleLabel: "English",
+        },
+        en: {
+            title: "Building safety orders in Marseille",
+            description: `In Marseille, many buildings are subject to a <strong>building safety order</strong> due to their state of disrepair.
+                This map lists these buildings: <strong style="color:#e74c3c">red pins</strong> indicate buildings still under order,
+                while <strong style="color:#27ae60">green pins</strong> indicate those for which the order has been lifted.`,
+            searchPlaceholder: "Search for an address (e.g. 69 rue d'Aubagne)...",
+            searchButton: "Search",
+            filterAll: "All",
+            filterRed: "Orders",
+            filterGreen: "Lifted",
+            chartTitle: "Safety orders and lifted orders by arrondissement",
+            footer: `Data source: <a href="https://www.marseille.fr/logement-urbanisme/amelioration-de-lhabitat/arretes-de-peril" target="_blank">City of Marseille — Safety orders (arrêtés de péril)</a> &nbsp;|&nbsp; Made by Arianna Tonazzolli`,
+            noResults: "No address found.",
+            resultsFound: n => `${n} result${n > 1 ? 's' : ''} found.`,
+            stats: (totalRed, pctRed, totalGreen, pctGreen) =>
+                `<b>${totalRed}</b> safety orders (${pctRed}% of Marseille buildings) &nbsp;|&nbsp; <b>${totalGreen}</b> lifted orders (${pctGreen}%)` +
+                `<br><small style="color:#aaa">Percentages calculated on 93,945 buildings in Marseille — source: <a href="https://bdnb.io" target="_blank" style="color:#aaa">National Building Database (BDNB)</a>, February 2026</small>`,
+            legendTitle: "Legend",
+            legendRed: "Safety order",
+            legendGreen: "Order lifted",
+            chartDatasetRed: "Safety orders",
+            chartDatasetGreen: "Lifted orders",
+            chartAxisArr: "Arrondissement",
+            toggleLabel: "Français",
+        },
+    };
+
+    let currentLang = localStorage.getItem('lang') || 'fr';
+
+    function applyStaticTranslations(lang) {
+        const t = TRANSLATIONS[lang];
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(function(el) {
+            el.textContent = t[el.dataset.i18n];
+        });
+        document.querySelectorAll('[data-i18n-html]').forEach(function(el) {
+            el.innerHTML = t[el.dataset.i18nHtml];
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el) {
+            el.placeholder = t[el.dataset.i18nPlaceholder];
+        });
+        document.getElementById('lang-toggle').textContent = t.toggleLabel;
+    }
+
     // Start the map centered on Marseille
     const map = L.map('map').setView([43.2965, 5.3698], 13);
 
@@ -226,9 +311,11 @@
     const totalBatiments = 93945;
     const pctRed        = (totalRed   / totalBatiments * 100).toFixed(2);
     const pctGreen      = (totalGreen / totalBatiments * 100).toFixed(2);
-    document.getElementById('stats').innerHTML =
-        '<b>' + totalRed + '</b> arrêtés de mise en sécurité (' + pctRed + '% des immeubles marseillais) &nbsp;|&nbsp; <b>' + totalGreen + '</b> mainlevées (' + pctGreen + '%)' +
-        '<br><small style="color:#aaa">Pourcentages calculés sur 93945 immeubles à Marseille — source : <a href="https://bdnb.io" target="_blank" style="color:#aaa">Base de Données Nationale des Bâtiments (BDNB)</a>, février 2026</small>';
+
+    function renderStats(lang) {
+        document.getElementById('stats').innerHTML =
+            TRANSLATIONS[lang].stats(totalRed, pctRed, totalGreen, pctGreen);
+    }
 
     function search() {
         const query = document.getElementById('search-input').value.trim().toLowerCase();
@@ -244,11 +331,11 @@
         });
 
         if (results.length === 0) {
-            msg.textContent = 'Nessun indirizzo trovato.';
+            msg.textContent = TRANSLATIONS[currentLang].noResults;
             return;
         }
 
-        msg.textContent = results.length + ' risultat' + (results.length === 1 ? 'o' : 'i') + ' trovati.';
+        msg.textContent = TRANSLATIONS[currentLang].resultsFound(results.length);
 
         // Zoom to the first result and open its popup
         const first = results[0];
@@ -298,18 +385,23 @@
         applyFilter();
     });
 
+    let legendDiv;
     const legend = L.control({ position: 'bottomright' });
     legend.onAdd = function() {
-        const div = L.DomUtil.create('div');
-        div.style.cssText = 'background:white;padding:10px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:13px;line-height:1.8';
-        div.innerHTML = `
-            <b>Légende</b><br>
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" height="20"> Arrêté de mise en sécurité<br>
-            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" height="20"> Mainlevée
-        `;
-        return div;
+        legendDiv = L.DomUtil.create('div');
+        legendDiv.style.cssText = 'background:white;padding:10px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.2);font-size:13px;line-height:1.8';
+        return legendDiv;
     };
     legend.addTo(map);
+
+    function renderLegend(lang) {
+        const t = TRANSLATIONS[lang];
+        legendDiv.innerHTML = `
+            <b>${t.legendTitle}</b><br>
+            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png" height="20"> ${t.legendRed}<br>
+            <img src="https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png" height="20"> ${t.legendGreen}
+        `;
+    }
 
     // --- Stacked bar chart by arrondissement (data from server) ---
     const chartData = JSON.parse(document.getElementById('chart-data').textContent);
@@ -317,18 +409,18 @@
     const redData   = chartData.map(e => e.red);
     const greenData = chartData.map(e => e.green);
 
-    new Chart(document.getElementById('arrondissement-chart'), {
+    const arrChart = new Chart(document.getElementById('arrondissement-chart'), {
         type: 'bar',
         data: {
             labels: labels,
             datasets: [
                 {
-                    label: 'Arrêtés de mise en sécurité',
+                    label: TRANSLATIONS[currentLang].chartDatasetRed,
                     data: redData,
                     backgroundColor: '#e74c3c'
                 },
                 {
-                    label: 'Mainlevées',
+                    label: TRANSLATIONS[currentLang].chartDatasetGreen,
                     data: greenData,
                     backgroundColor: '#27ae60'
                 }
@@ -342,7 +434,7 @@
             scales: {
                 x: {
                     stacked: true,
-                    title: { display: true, text: 'Arrondissement', font: { size: 13 } }
+                    title: { display: true, text: TRANSLATIONS[currentLang].chartAxisArr, font: { size: 13 } }
                 },
                 y: {
                     stacked: true,
@@ -352,10 +444,34 @@
             }
         }
     });
+
+    function updateChartLabels(lang) {
+        const t = TRANSLATIONS[lang];
+        arrChart.data.datasets[0].label = t.chartDatasetRed;
+        arrChart.data.datasets[1].label = t.chartDatasetGreen;
+        arrChart.options.scales.x.title.text = t.chartAxisArr;
+        arrChart.update();
+    }
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('lang', lang);
+        applyStaticTranslations(lang);
+        renderStats(lang);
+        renderLegend(lang);
+        updateChartLabels(lang);
+        document.getElementById('search-message').textContent = '';
+    }
+
+    document.getElementById('lang-toggle').addEventListener('click', function() {
+        setLanguage(currentLang === 'fr' ? 'en' : 'fr');
+    });
+
+    setLanguage(currentLang);
 </script>
 
 
-<p id="footer">
+<p id="footer" data-i18n-html="footer">
     Source des données : <a href="https://www.marseille.fr/logement-urbanisme/amelioration-de-lhabitat/arretes-de-peril" target="_blank">Ville de Marseille — Arrêtés de péril</a> &nbsp;|&nbsp; Réalisé par Arianna Tonazzolli
 </p>
 
