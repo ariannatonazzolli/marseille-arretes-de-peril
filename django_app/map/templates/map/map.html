@@ -1,12 +1,13 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arrêtés de mise en sécurité à Marseille</title>
-    <meta name="description" content="Carte interactive des immeubles à Marseille concernés par un arrêté de mise en sécurité ou une mainlevée.">
+    <meta name="description" content="{{ total_red }} ({{ pct_red }}%) immeubles en péril à Marseille — Risque critique pour la sécurité publique. Carte interactive des bâtiments dangereux avec arrêtés de mise en sécurité.">
     <meta property="og:title" content="Arrêtés de mise en sécurité à Marseille">
-    <meta property="og:description" content="Découvrez sur une carte interactive les bâtiments à Marseille concernés par un arrêté de mise en sécurité ou une mainlevée.">
+    <meta property="og:description" content="{{ total_red }} ({{ pct_red }}%) immeubles en péril à Marseille — Risque critique pour la sécurité publique. Carte interactive des bâtiments dangereux avec arrêtés de mise en sécurité.">
     <meta property="og:type" content="website">
 
     <!-- Leaflet CSS -->
@@ -239,13 +240,7 @@
 
 <div class="page-title">
     <div class="title-badge-circle" aria-hidden="true">
-        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-            <rect x="6" y="6" width="52" height="52" rx="26" fill="#1f2937"/>
-            <path d="M20 24h24v20H20z" fill="#ffffff"/>
-            <path d="M24 24v-4h16v4" fill="#ffffff"/>
-            <path d="M28 38v-6h8v6" fill="#ffffff"/>
-            <path d="M22 44h20" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+        <img src="{% static 'images/marseille.jpg' %}" alt="Badge Marseille" style="width: 100%; height: 100%; object-fit: cover;">
     </div>
     <h1 data-i18n="title">Arrêtés de mise en sécurité à Marseille</h1>
 </div>

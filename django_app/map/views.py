@@ -51,6 +51,12 @@ def map_view(request):
     total_map   = len(places_data)
     total_chart = sum(d["red"] + d["green"] for d in chart_data)
     missing     = total_map - total_chart
+    
+    # Calculate stats for SEO meta description
+    total_red = sum(d["red"] for d in chart_data)
+    total_green = sum(d["green"] for d in chart_data)
+    total_batiments = 93945
+    pct_red = round(total_red / total_batiments * 100, 2)
 
     return render(request, "map/map.html", {
         "places_data": places_data,
@@ -59,4 +65,7 @@ def map_view(request):
         "debug_total_map": total_map,
         "debug_total_chart": total_chart,
         "debug_arr_keys": list(by_arr.keys()),
+        "total_red": total_red,
+        "total_green": total_green,
+        "pct_red": pct_red,
     })
