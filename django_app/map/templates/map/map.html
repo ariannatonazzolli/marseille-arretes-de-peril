@@ -239,6 +239,10 @@
     <canvas id="arrondissement-chart"></canvas>
 </div>
 
+<p id="footer" data-i18n-html="footer">
+    Source des données : <a href="https://www.marseille.fr/logement-urbanisme/amelioration-de-lhabitat/arretes-de-peril" target="_blank">Ville de Marseille — Arrêtés de péril</a> &nbsp;|&nbsp; Réalisé par Arianna Tonazzolli
+</p>
+
 {{ places_data|json_script:"places-data" }}
 {{ chart_data|json_script:"chart-data" }}
 
@@ -284,7 +288,7 @@
             filterAll: "All",
             filterRed: "Orders",
             filterGreen: "Lifted",
-            chartTitle: "Safety orders and lifted orders by arrondissement",
+            chartTitle: "Safety orders and lifted orders by arrondissement (district)",
             footer: `Data source: <a href="https://www.marseille.fr/logement-urbanisme/amelioration-de-lhabitat/arretes-de-peril" target="_blank">City of Marseille — Safety orders (arrêtés de péril)</a> &nbsp;|&nbsp; Made by Arianna Tonazzolli`,
             noResults: "No address found.",
             resultsFound: n => `${n} result${n > 1 ? 's' : ''} found.`,
@@ -568,10 +572,6 @@
     setLanguage(currentLang);
 </script>
 
-
-<p id="footer" data-i18n-html="footer">
-    Source des données : <a href="https://www.marseille.fr/logement-urbanisme/amelioration-de-lhabitat/arretes-de-peril" target="_blank">Ville de Marseille — Arrêtés de péril</a> &nbsp;|&nbsp; Réalisé par Arianna Tonazzolli
-</p>
 
 </body>
 </html>
