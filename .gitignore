@@ -1,5 +1,4 @@
 # Django
-django_app/db.sqlite3
 django_app/staticfiles/
 **/__pycache__/
 *.pyc

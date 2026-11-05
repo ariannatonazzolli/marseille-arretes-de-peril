@@ -32,6 +32,10 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+# OpenStreetMap tiles require a Referer header; Django's default
+# ("same-origin") strips it on cross-origin requests and gets tiles blocked.
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 
 # Application definition
 
